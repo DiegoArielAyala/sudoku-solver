@@ -56,8 +56,7 @@ renderTemplate()
 
 
 
-
-
+/*
 // Funcion que crea un objeto por cada casilla
 function resolveSudoku() {
     let boxObject = {
@@ -113,8 +112,82 @@ function resolveSudoku() {
 }
 resolveSudoku();
 sudokuIsCompleted();
+*/
+
+
+let boxObject = {
+    "row": null,
+    "column": null,
+    "blockRowInit": null,
+    "blockRowFinish": null,
+    "blockColumnInit": null,
+    "blockColumnFinish": null,
+    "numeros": Array.from({ length: 9}, (_, n) => n + 1)
+}
+
+let sudokuResolved = false;
+function startResolveSudoku() {
+    if(sudokuResolved == true){
+        return console.log("Sudoku completado");
+    }
+    let k = 0;
+    let l = 0;
+    let resolveSudoku = setInterval(()=>{
+        if(k===9){
+            clearInterval(resolveSudoku);
+            renderTemplate()
+            sudokuIsCompleted();
+            return;
+        }
+        boxObject.row = k + 1;
+        boxObject.column = l + 1;
+        if(typeof template[boxObject.row - 1][boxObject.column - 1] !== "number"){
+            defineBlockInitAndFinish(boxObject);
+            columnNumbers(boxObject);
+            rowNumbers(boxObject);
+            blockNumbers(boxObject);
+            console.log(boxObject)
+            renderTemplate()
+        }
+        boxObject.row = null;
+        boxObject.column = null;
+        boxObject.blockRowInit = null;
+        boxObject.blockRowFinish = null;
+        boxObject.blockColumnInit = null;
+        boxObject.blockColumnFinish = null;
+        boxObject.numeros = Array.from({ length: 9 },(_,n)=> n + 1);
+
+        //console.log("k:", k, "l:", l);
+        l++;
+        if(l===9){
+            k++;
+            l = 0;
+        }
+        //console.log("k:", k, "l:", l);
+    },100)
+    
+}
+startResolveSudoku()
+// Funcion para revisar si se ha completado el sudoku:
+function sudokuIsCompleted() {
+    console.log("Revisando si se ha completado el Sudoku")
+    sudokuResolved = true;
+    for(m = 0; m < 9; m++){
+        for(o = 0; o < 9; o++){
+            if(typeof template[m][o] !== "number"){
+                sudokuResolved = false;
+                //console.log("sudokuResolved: ", sudokuResolved);
+            }
+        }
+    }
+    //console.log("sudokuResolved: ", sudokuResolved);
+    if(sudokuResolved == false){
+        startResolveSudoku();
+    }
+}
+// sudokuIsCompleted()
 /*
-async function resolveSudoku() {
+function resolveSudoku() {
     for(let k = 0; k < 9; k++){
         for(let l = 0; l < 9; l++){
                 boxObject.row = k + 1;
@@ -138,20 +211,10 @@ async function resolveSudoku() {
             } 
     }
 }
-resolveSudoku()
+//resolveSudoku()
 */
-// Funcion para revisar si se ha completado el sudoku:
-function sudokuIsCompleted() {
-    for(i = 0; i < 9; i++){
-        for(j = 0; j < 9; j++){
-            if(typeof template[i][j] !== "number"){
-                resolveSudoku()
-            } else {
-                console.log("Sudoku terminado")
-            }
-        }
-    }
-}
+
+
 
 
 // Array con los posibles numeros para 1-1
@@ -168,7 +231,7 @@ const possibleNumbers11 = {
 
 // Funcion que define el inicio y final del bloque dentro del objeto de cada casilla
 function defineBlockInitAndFinish(box) {
-    console.log("defineBlockInitAndFinish...");
+    //console.log("defineBlockInitAndFinish...");
     box.row >= 1 && box.row <= 3 ? (box.blockRowInit = 1, box.blockRowFinish = 3) : box.row >= 4 && box.row <= 6 ? (box.blockRowInit = 4, box.blockRowFinish = 6) : (box.blockRowInit = 7, box.blockRowFinish = 9);
     box.column >= 1 && box.column <= 3 ? (box.blockColumnInit = 1, box.blockColumnFinish = 3) : box.column >= 4 && box.column <= 6 ? (box.blockColumnInit = 4, box.blockColumnFinish = 6) : (box.blockColumnInit = 7, box.blockColumnFinish = 9);
     //console.log("box", box);
@@ -179,7 +242,7 @@ function defineBlockInitAndFinish(box) {
 // Funcion que crea un array con los posibles numeros en del bloque
 
 function defineBlocks(box) {
-    console.log("defineBlocks...");
+    //console.log("defineBlocks...");
     const blockNumbers = [];
     for(i = box.blockRowInit - 1; i < box.blockRowFinish; i++){
         for(j = box.blockColumnInit - 1; j < box.blockColumnFinish; j++){
@@ -195,7 +258,7 @@ function defineBlocks(box) {
 //Funcion que revise los numeros de la fila y los elimine del array
 //@params objeto perteneciente a la casilla de la que se desea buscar
 function rowNumbers(box) {
-    console.log("rowNumbers...");
+    //console.log("rowNumbers...");
     const row = box.row - 1;
     for(i = 0; i < 9 ; i++){
         const rowNumber = template[row][i];
@@ -211,7 +274,7 @@ function rowNumbers(box) {
 
 //Funcion que revise los numeros de la columna y los elimine del array
 function columnNumbers(box) {
-    console.log("columnNumbers...");
+    //console.log("columnNumbers...");
     const column = box.column - 1;
     for(i = 0; i < 9; i++){
         const columnNumber = template[i][column];
@@ -227,7 +290,7 @@ function columnNumbers(box) {
 
 //Funcion que revise los numeros del bloque y los elimine del array
 function blockNumbers(box){
-    console.log("blockNumbers...");
+    //console.log("blockNumbers...");
     const blockNumbers = defineBlocks(box);
     for(i = 0; i < 9; i++){
         if(typeof blockNumbers[i] === "number"){
@@ -243,7 +306,7 @@ function blockNumbers(box){
 // Funcion que detecta si en box.numeros queda solo 1 numero y lo agrega al template en la ubicacion del box
 
 function detectOnlyOneNumber(box) {
-    console.log("detectOnlyOneNumber...");
+    //console.log("detectOnlyOneNumber...");
     if (box.numeros.length === 1) {
         template[box.row - 1][box.column - 1] = box.numeros[0]
     }
