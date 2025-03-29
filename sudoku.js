@@ -14,45 +14,40 @@ function fillTemplate(row, column, number) {
     // renderTemplate();
 }
 
-fillTemplate(1, 1, 4)
-fillTemplate(1, 2, 2)
-fillTemplate(1, 6, 3)
-fillTemplate(1, 8, 8)
-fillTemplate(1, 9, 1)
-fillTemplate(2, 3, 1)
-fillTemplate(2, 9, 3)
-fillTemplate(3, 2, 7)
-fillTemplate(3, 3, 8)
-fillTemplate(3, 5, 1)
-fillTemplate(3, 6, 5)
-fillTemplate(3, 8, 6)
-fillTemplate(3, 9, 9)
-fillTemplate(4, 4, 6)
-fillTemplate(4, 8, 3)
-fillTemplate(4, 9, 5)
-fillTemplate(5, 1, 2)
-fillTemplate(5, 2, 5)
-fillTemplate(5, 3, 7)
-fillTemplate(5, 7, 9)
-fillTemplate(5, 8, 4)
-fillTemplate(5, 9, 6)
-fillTemplate(6, 6, 9)
-fillTemplate(6, 9, 8)
-fillTemplate(7, 1, 1)
-fillTemplate(7, 2, 9)
+fillTemplate(1, 1, 8)
+fillTemplate(1, 3, 1)
+fillTemplate(1, 9, 7)
+fillTemplate(2, 2, 9)
+fillTemplate(2, 3, 7)
+fillTemplate(2, 4, 5)
+fillTemplate(2, 5, 8)
+fillTemplate(3, 5, 9)
+fillTemplate(3, 6, 7)
+fillTemplate(3, 7, 6)
+fillTemplate(3, 9, 8)
+fillTemplate(4, 5, 5)
+fillTemplate(4, 9, 3)
+fillTemplate(5, 1, 7)
+fillTemplate(5, 2, 8)
+fillTemplate(5, 4, 3)
+fillTemplate(5, 6, 4)
+fillTemplate(5, 9, 2)
+fillTemplate(6, 3, 3)
+fillTemplate(6, 4, 6)
+fillTemplate(6, 5, 7)
+fillTemplate(6, 7, 1)
+fillTemplate(7, 1, 9)
+fillTemplate(7, 2, 7)
+fillTemplate(7, 3, 6)
 fillTemplate(7, 4, 2)
-fillTemplate(7, 5, 8)
-fillTemplate(7, 6, 4)
-fillTemplate(8, 1, 7)
-fillTemplate(8, 2, 4)
-fillTemplate(8, 3, 5)
-fillTemplate(8, 4, 3)
-fillTemplate(8, 6, 6)
-fillTemplate(8, 9, 2)
-fillTemplate(9, 4, 1)
-fillTemplate(9, 5, 5)
-fillTemplate(9, 7, 6)
+fillTemplate(7, 5, 3)
+fillTemplate(7, 6, 1)
+fillTemplate(8, 2, 1)
+fillTemplate(8, 7, 3)
+fillTemplate(8, 8, 2)
+fillTemplate(9, 2, 3)
 renderTemplate()
+
 
 
 
@@ -114,22 +109,91 @@ resolveSudoku();
 sudokuIsCompleted();
 */
 
+ 
 
-let boxObject = {
+const boxObjectTemplate = {
     "row": null,
     "column": null,
     "blockRowInit": null,
     "blockRowFinish": null,
     "blockColumnInit": null,
     "blockColumnFinish": null,
-    "numeros": Array.from({ length: 9}, (_, n) => n + 1)
+    "numbers": Array.from({ length: 9}, (_, n) => n + 1)
 }
 
+
+
 let sudokuResolved = false;
+
+/*
+ - Tomar una celda
+ - Tomar cada uno de los valores que hay en "numbers" (es decir, los posibles valores)
+ - Revisar que en el resto de celdas libres de la misma fila, columna y bloque, no tengan ese numero como posible, por lo tanto, a esa celda se le asigna ese numero.
+
+*/
+
+function secondMethod(boxObject) {
+    console.log("Iniciando secondMethod")
+    boxObject.numbers.forEach(number => {
+        //console.log("number: ", number);
+        // Revisar filas:
+        let possibleNumberCounter = 0;
+        for(let i = 0; i < 9; i++){
+            if(typeof template[boxObject.row - 1][i] !== "number"){
+                let newBoxObject = structuredClone(boxObjectTemplate);
+                newBoxObject.row = boxObject.row;
+                newBoxObject.column = i + 1;
+                defineBlockInitAndFinish(newBoxObject);
+                columnNumbers(newBoxObject);
+                rowNumbers(newBoxObject);
+                blockNumbers(newBoxObject);
+                //console.log("newBoxObject: ", newBoxObject);
+                if(newBoxObject.numbers.includes(number)){
+                    possibleNumberCounter++;
+                    //console.log("possibleNumberCounter: ", possibleNumberCounter);
+                } 
+            }
+        }
+        if(possibleNumberCounter === 1) {
+            template[boxObject.row -1][boxObject.column -1] = number
+            console.log("Numero añadido con secondMethod: ", number);
+        };
+    });
+
+    boxObject.numbers.forEach(number => {
+        //console.log("number: ", number);
+        // Revisar filas:
+        let possibleNumberCounter = 0;
+        for(let i = 0; i < 9; i++){
+            if(typeof template[i][boxObject.column -1] !== "number"){
+                let newBoxObject = structuredClone(boxObjectTemplate);
+                newBoxObject.row = i + 1;
+                newBoxObject.column = boxObject.column;
+                defineBlockInitAndFinish(newBoxObject);
+                columnNumbers(newBoxObject);
+                rowNumbers(newBoxObject);
+                blockNumbers(newBoxObject);
+                //console.log("newBoxObject: ", newBoxObject);
+                if(newBoxObject.numbers.includes(number)){
+                    possibleNumberCounter++;
+                    //console.log("possibleNumberCounter: ", possibleNumberCounter);
+                } 
+            }
+        }
+        if(possibleNumberCounter === 1) {
+            template[boxObject.row -1][boxObject.column -1] = number
+            console.log("Numero añadido con secondMethod: ", number);
+        };
+    });
+}
+
+
 function startResolveSudoku() {
+    console.log("startResolveSudoku...")
     if(sudokuResolved == true){
         return console.log("Sudoku completado");
     }
+    let boxObject = structuredClone(boxObjectTemplate);
     let k = 0;
     let l = 0;
     let resolveSudoku = setInterval(()=>{
@@ -146,8 +210,9 @@ function startResolveSudoku() {
             columnNumbers(boxObject);
             rowNumbers(boxObject);
             blockNumbers(boxObject);
-            console.log(boxObject)
-            renderTemplate()
+            //console.log(boxObject)
+            secondMethod(boxObject);
+            renderTemplate();
         }
         boxObject.row = null;
         boxObject.column = null;
@@ -155,7 +220,7 @@ function startResolveSudoku() {
         boxObject.blockRowFinish = null;
         boxObject.blockColumnInit = null;
         boxObject.blockColumnFinish = null;
-        boxObject.numeros = Array.from({ length: 9 },(_,n)=> n + 1);
+        boxObject.numbers = Array.from({ length: 9 },(_,n)=> n + 1);
 
         //console.log("k:", k, "l:", l);
         l++;
@@ -167,7 +232,7 @@ function startResolveSudoku() {
     },100)
     
 }
-startResolveSudoku()
+
 // Funcion para revisar si se ha completado el sudoku:
 function sudokuIsCompleted() {
     console.log("Revisando si se ha completado el Sudoku")
@@ -180,9 +245,10 @@ function sudokuIsCompleted() {
             }
         }
     }
-    //console.log("sudokuResolved: ", sudokuResolved);
     if(sudokuResolved == false){
         startResolveSudoku();
+    } else {
+        console.log("SUDOKU COMPLETADO!")
     }
 }
 // sudokuIsCompleted()
@@ -206,7 +272,7 @@ function resolveSudoku() {
                     "blockRowFinish": null,
                     "blockColumnInit": null,
                     "blockColumnFinish": null,
-                    "numeros": Array.from({ length: 9}, (_, n) => n + 1)
+                    "numbers": Array.from({ length: 9}, (_, n) => n + 1)
                 }
             } 
     }
@@ -225,7 +291,7 @@ const possibleNumbers11 = {
     "blockRowFinish": null,
     "blockColumnInit": null,
     "blockColumnFinish": null,
-    "numeros": Array.from({ length: 9}, (_, i) => i + 1)
+    "numbers": Array.from({ length: 9}, (_, i) => i + 1)
 }
 //console.log(possibleNumbers11)
 
@@ -263,9 +329,9 @@ function rowNumbers(box) {
     for(i = 0; i < 9 ; i++){
         const rowNumber = template[row][i];
         if(typeof rowNumber === "number") {
-            const indexOfRowNumber = box.numeros.indexOf(rowNumber)
+            const indexOfRowNumber = box.numbers.indexOf(rowNumber)
             if( indexOfRowNumber !== -1){
-                box.numeros.splice(indexOfRowNumber, 1)
+                box.numbers.splice(indexOfRowNumber, 1)
             }
         }
     }
@@ -279,9 +345,9 @@ function columnNumbers(box) {
     for(i = 0; i < 9; i++){
         const columnNumber = template[i][column];
         if(typeof columnNumber === "number"){
-            const indexOfColumnNumber = box.numeros.indexOf(columnNumber);
+            const indexOfColumnNumber = box.numbers.indexOf(columnNumber);
             if(indexOfColumnNumber !== -1){
-                box.numeros.splice(indexOfColumnNumber, 1);
+                box.numbers.splice(indexOfColumnNumber, 1);
             }
         }
     }
@@ -294,9 +360,9 @@ function blockNumbers(box){
     const blockNumbers = defineBlocks(box);
     for(i = 0; i < 9; i++){
         if(typeof blockNumbers[i] === "number"){
-            const indexOfBlockNumber = box.numeros.indexOf(blockNumbers[i]);
+            const indexOfBlockNumber = box.numbers.indexOf(blockNumbers[i]);
             if(indexOfBlockNumber !== -1){
-                box.numeros.splice(indexOfBlockNumber, 1);
+                box.numbers.splice(indexOfBlockNumber, 1);
             }
         }
     }
@@ -307,8 +373,9 @@ function blockNumbers(box){
 
 function detectOnlyOneNumber(box) {
     //console.log("detectOnlyOneNumber...");
-    if (box.numeros.length === 1) {
-        template[box.row - 1][box.column - 1] = box.numeros[0]
+    if (box.numbers.length === 1) {
+        template[box.row - 1][box.column - 1] = box.numbers[0];
+        console.log("Numero añadido con detectOnlyOneNumber: ", box.numbers[0] )
     }
 }
 
@@ -318,3 +385,6 @@ function detectOnlyOneNumber(box) {
 //blockNumbers(possibleNumbers11)
 //detectOnlyOneNumber(possibleNumbers11)
 //renderTemplate()
+startResolveSudoku()
+
+
