@@ -47,7 +47,20 @@ fillTemplate(8, 7, 3)
 fillTemplate(8, 8, 2)
 fillTemplate(9, 2, 3)
 renderTemplate()
+/*
+Sudoku inicial:
+1 [8] [ ] [1]  [ ] [ ] [ ]  [ ] [ ] [7] 
+2 [ ] [9] [7]  [5] [8] [ ]  [ ] [ ] [ ] 
+3 [ ] [ ] [ ]  [ ] [9] [7]  [6] [ ] [8] 
 
+4 [ ] [ ] [ ]  [ ] [5] [ ]  [ ] [ ] [3] 
+5 [7] [8] [ ]  [3] [ ] [4]  [ ] [ ] [2] 
+6 [ ] [ ] [3]  [6] [7] [ ]  [1] [ ] [ ] 
+
+7 [9] [7] [6]  [2] [3] [1]  [ ] [ ] [ ] 
+8 [ ] [1] [ ]  [ ] [ ] [ ]  [3] [2] [ ] 
+9 [ ] [3] [ ]  [ ] [ ] [ ]  [ ] [ ] [ ]
+*/
 
 
 
@@ -125,18 +138,148 @@ const boxObjectTemplate = {
 
 let sudokuResolved = false;
 
-/*
- - Tomar una celda
- - Tomar cada uno de los valores que hay en "numbers" (es decir, los posibles valores)
- - Revisar que en el resto de celdas libres de la misma fila, columna y bloque, no tengan ese numero como posible, por lo tanto, a esa celda se le asigna ese numero.
 
-*/
+function thirdMethod(boxObject) {
+    // Por cada numero de una fila
+    // Revisar si se repite en solo una de las otras filas correspondientes al bloque
+    // Revisar si en el bloque donde no estan ninguna de esas dos veces el numero, si queda solo libre una casilla
+    // Colocar el numero en esa casilla
+
+    // thirdMethod en filas:
+    console.log("thirdMethod");
+    let numberCount = 0;
+    let rowsIncludesNumber = [];
+    let blocksIncludesNumber = [];
+    if(typeof template[boxObject.row - 1][boxObject.column - 1] == "number"){
+        const number = template[boxObject.row - 1][boxObject.column - 1];
+        console.log("number: ", number);
+        for(let i = boxObject.blockRowInit - 1; i < boxObject.blockRowFinish; i++ ){
+            for(let j = 0; j < 9; j++){
+                if(template[i][j] === number){
+                    console.log("boxObject ", boxObject)
+                    rowsIncludesNumber.push(i + 1);
+                    j <= 2 ? blocksIncludesNumber.push(1) : j <= 5 ? blocksIncludesNumber.push(2) : blocksIncludesNumber.push(3)
+                    numberCount++;
+                }
+            }
+        }
+        console.log("rowsIncludesNumber ", rowsIncludesNumber)
+        console.log("blocksIncludesNumber ", blocksIncludesNumber)
+        if(numberCount === 2) {
+            console.log("numberCount === 2 para ", number)
+            // Para rowsIncludesNumber  [ 4, 6 ], tengo que buscar que fila entre 4 y 6 no esta
+            // Para blocksIncludesNumber  [ 1, 2 ], tengo que buscar que bloque no está
+            const rowNotIncluded = extract(rowsIncludesNumber);
+            const blockNotIncluded = extractBlock(blocksIncludesNumber);
+            // Buscar en esa fila y ese bloque si  hay solo 1 casilla libre
+            let emptyColumns = [];
+            if (blockNotIncluded === 1) {
+                for(let i = 0; i < 3; i++){
+                    if(typeof template[rowNotIncluded - 1][i] !== "number"){
+                        emptyColumns.push(i);
+                    }
+                }
+            } else if (blockNotIncluded === 2) {
+                for(let i = 3; i < 6; i++){
+                    if(typeof template[rowNotIncluded - 1][i] !== "number"){
+                        emptyColumns.push(i);
+                    }
+                }
+            } else {
+                for(let i = 6; i < 9; i++){
+                    if(typeof template[rowNotIncluded - 1][i] !== "number"){
+                        emptyColumns.push(i);
+                    }
+                }
+            }
+            renderTemplate();
+            console.log("En la fila " + rowNotIncluded + " bloque " + blockNotIncluded + " las columnas " + (emptyColumns + 1) + " estan libres")
+            // Añadir el numero a la unica casilla libre
+            if(emptyColumns.length === 1) {
+                template[rowNotIncluded -1 ][emptyColumns] = number;
+                console.log("Añadido con thirdMethod - emptyColumns el numero: " + number + " en fila " + rowNotIncluded + " columna " + (emptyColumns + 1))
+                renderTemplate();
+            }
+            // En el caso que haya mas de una casilla libre, buscar si en solo 1 de las dos columnas, NO esta el "number"
+
+            // En ese caso, añadirlo a esa casilla
+
+        }
+    }
+
+    // thirdMethod en columnas:
+}
+
+// Funcion para extraer fila o columna o bloque que no contenga el numero
+function extract(includesNumberArray) {
+    if(includesNumberArray.length === 2) {
+        for(let i = 0; i < 2; i++){
+            if(includesNumberArray[i] <= 3) {
+                for(let j = 1; j <= 3; j++){
+                    if(!includesNumberArray.includes(j)){
+                        console.log("el array " + includesNumberArray + " no contiene: " + j )
+                        return j;
+                    }
+                }
+            } else if (includesNumberArray[i] <= 6) {
+                for(let j = 4; j <= 6; j++){
+                    if(!includesNumberArray.includes(i)){
+                        console.log("el array " + includesNumberArray + " no contiene: " + j )
+                        return j;
+                    }
+                }
+            } else {
+                for(let j = 7; j <= 9; j++){
+                    if(!includesNumberArray.includes(i)){
+                        console.log("el array " + includesNumberArray + " no contiene: " + j )
+                        return j;
+                    }
+                    /* Revisar este error:
+                    numberCount === 2 para  7
+el array 7,8 no contiene: 7
+1 [8] [ ] [1]  [4] [2] [ ]  [ ] [ ] [7] 
+2 [ ] [9] [7]  [5] [8] [ ]  [2] [ ] [ ] 
+3 [ ] [ ] [ ]  [1] [9] [7]  [6] [ ] [8] 
+
+4 [6] [ ] [ ]  [ ] [5] [ ]  [ ] [ ] [3] 
+5 [7] [8] [ ]  [3] [1] [4]  [ ] [6] [2] 
+6 [ ] [ ] [3]  [6] [7] [ ]  [1] [ ] [ ] 
+
+7 [9] [7] [6]  [2] [3] [1]  [ ] [ ] [ ] 
+8 [ ] [1] [ ]  [7] [ ] [ ]  [3] [2] [ ] 
+9 [ ] [3] [ ]  [ ] [ ] [ ]  [ ] [ ] [ ] 
+
+En la fila 7 bloque undefined hay 6,7,8 casillas libres
+thirdMethod */
+                }
+            }
+        }
+    }
+}
+
+// Funcion para extraer bloque que no contenga el numero
+function extractBlock(includesNumberArray) {
+    if(includesNumberArray.length === 2) {
+        for(let i = 1; i < 3; i ++) {
+            if(!includesNumberArray.includes(i)) {
+                console.log("el bloque " + includesNumberArray + " no contiene: " + i )
+                return i;
+            }
+        }
+    }
+}
 
 function secondMethod(boxObject) {
-    console.log("Iniciando secondMethod")
+    /*
+     - Tomar una celda
+     - Tomar cada uno de los valores que hay en "numbers" (es decir, los posibles valores)
+     - Revisar que en el resto de celdas libres de la misma fila, columna y bloque, no tengan ese numero como posible, por lo tanto, a esa celda se le asigna ese numero.
+    
+    */
+    //console.log("Iniciando secondMethod")
+    // Revisar filas:
     boxObject.numbers.forEach(number => {
         //console.log("number: ", number);
-        // Revisar filas:
         let possibleNumberCounter = 0;
         for(let i = 0; i < 9; i++){
             if(typeof template[boxObject.row - 1][i] !== "number"){
@@ -156,13 +299,14 @@ function secondMethod(boxObject) {
         }
         if(possibleNumberCounter === 1) {
             template[boxObject.row -1][boxObject.column -1] = number
-            console.log("Numero añadido con secondMethod: ", number);
+            // console.log("Añadido con secondMethod (filas): ", number, "en ",boxObject.row, boxObject.column );
+            // renderTemplate()
         };
     });
 
+    // Revisar columnas:
     boxObject.numbers.forEach(number => {
         //console.log("number: ", number);
-        // Revisar filas:
         let possibleNumberCounter = 0;
         for(let i = 0; i < 9; i++){
             if(typeof template[i][boxObject.column -1] !== "number"){
@@ -182,9 +326,47 @@ function secondMethod(boxObject) {
         }
         if(possibleNumberCounter === 1) {
             template[boxObject.row -1][boxObject.column -1] = number
-            console.log("Numero añadido con secondMethod: ", number);
+            //console.log("Añadido con secondMethod (columnas): ", number, "en ",boxObject.row, boxObject.column );
+            //renderTemplate()
         };
     });
+
+
+    // Revisar bloques:
+    boxObject.numbers.forEach(number => {
+        //console.log("number: ", number);
+        let possibleNumberCounter = 0;
+        //console.log("Revisando secondMethod block: ", boxObject.row, boxObject.column);
+        //console.log(boxObject);
+        for(let i = boxObject.blockRowInit - 1; i < boxObject.blockRowFinish; i++){
+            for(let j = boxObject.blockColumnInit - 1; j < boxObject.blockColumnFinish; j++){
+                
+                //console.log("Comparando con: ", i, j, "=", template[i][j] )
+                if(typeof template[i][j] !== "number"){
+                    let newBoxObject = structuredClone(boxObjectTemplate);
+                    newBoxObject.row = i + 1;
+                    newBoxObject.column = j + 1;
+                    defineBlockInitAndFinish(newBoxObject);
+                    columnNumbers(newBoxObject);
+                    rowNumbers(newBoxObject);
+                    blockNumbers(newBoxObject);
+                    //console.log("newBoxObject: ", newBoxObject);
+                    if(newBoxObject.numbers.includes(number)){
+                        possibleNumberCounter++;
+                        //console.log("possibleNumberCounter: ", possibleNumberCounter);
+                    } 
+                }
+            }
+        }
+        if(possibleNumberCounter === 1) {
+            template[boxObject.row -1][boxObject.column -1] = number
+            console.log("Añadido con secondMethod (bloques): ", number, "en ",boxObject.row, boxObject.column );
+            renderTemplate()
+        };
+    });
+
+
+
 }
 
 
@@ -210,9 +392,10 @@ function startResolveSudoku() {
             columnNumbers(boxObject);
             rowNumbers(boxObject);
             blockNumbers(boxObject);
-            //console.log(boxObject)
+            // console.log("boxObject: ", boxObject)
             secondMethod(boxObject);
-            renderTemplate();
+            thirdMethod(boxObject);
+            //renderTemplate();
         }
         boxObject.row = null;
         boxObject.column = null;
@@ -305,7 +488,7 @@ function defineBlockInitAndFinish(box) {
 //defineBlockInitAndFinish(possibleNumbers11)
 
 
-// Funcion que crea un array con los posibles numeros en del bloque
+// Funcion que crea un array con los posibles numeros del bloque
 
 function defineBlocks(box) {
     //console.log("defineBlocks...");
@@ -375,7 +558,8 @@ function detectOnlyOneNumber(box) {
     //console.log("detectOnlyOneNumber...");
     if (box.numbers.length === 1) {
         template[box.row - 1][box.column - 1] = box.numbers[0];
-        console.log("Numero añadido con detectOnlyOneNumber: ", box.numbers[0] )
+        console.log("Añadido con detectOnlyOneNumber: ", box.numbers[0], "en ", box.row, box.column )
+        renderTemplate()
     }
 }
 
