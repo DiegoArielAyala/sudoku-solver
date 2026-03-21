@@ -146,7 +146,7 @@ function thirdMethod(boxObject) {
     // Colocar el numero en esa casilla
 
     // thirdMethod en filas:
-    console.log("thirdMethod");
+    // console.log("thirdMethod");
     let numberCount = 0;
     let rowsIncludesNumber = [];
     let blocksIncludesNumber = [];
@@ -167,9 +167,9 @@ function thirdMethod(boxObject) {
         console.log("blocksIncludesNumber ", blocksIncludesNumber)
         if(numberCount === 2) {
             console.log("numberCount === 2 para ", number)
-            // Para rowsIncludesNumber  [ 4, 6 ], tengo que buscar que fila entre 4 y 6 no esta
-            // Para blocksIncludesNumber  [ 1, 2 ], tengo que buscar que bloque no está
+            // Buscar en qué fila del subgrupo de 3, no esta "number".
             const rowNotIncluded = extract(rowsIncludesNumber);
+            // De ese subgrupo de 3 filas, buscar en que bloque no esta "number"
             const blockNotIncluded = extractBlock(blocksIncludesNumber);
             // Buscar en esa fila y ese bloque si  hay solo 1 casilla libre
             let emptyColumns = [];
@@ -185,7 +185,7 @@ function thirdMethod(boxObject) {
                         emptyColumns.push(i);
                     }
                 }
-            } else {
+            } else if (blockNotIncluded === 3) {
                 for(let i = 6; i < 9; i++){
                     if(typeof template[rowNotIncluded - 1][i] !== "number"){
                         emptyColumns.push(i);
@@ -193,16 +193,36 @@ function thirdMethod(boxObject) {
                 }
             }
             renderTemplate();
-            console.log("En la fila " + rowNotIncluded + " bloque " + blockNotIncluded + " las columnas " + (emptyColumns + 1) + " estan libres")
+            console.log("En la fila " + rowNotIncluded + " bloque " + blockNotIncluded + ", las columnas " + (emptyColumns) + " estan libres")
             // Añadir el numero a la unica casilla libre
             if(emptyColumns.length === 1) {
-                template[rowNotIncluded -1 ][emptyColumns] = number;
-                console.log("Añadido con thirdMethod - emptyColumns el numero: " + number + " en fila " + rowNotIncluded + " columna " + (emptyColumns + 1))
+                template[rowNotIncluded - 1][emptyColumns] = number;
+                console.log("Añadido con thirdMethod - emptyColumns el numero: " + number + " en fila " + rowNotIncluded + " columna " + (emptyColumns))
                 renderTemplate();
             }
             // En el caso que haya mas de una casilla libre, buscar si en solo 1 de las dos columnas, NO esta el "number"
+            if(emptyColumns.length === 2 || emptyColumns.length === 3 ){
+                const columnsWitouthNumber = [];
+                for(let i = 0; i < emptyColumns.length; i++){
+                    let columnHaveNumber = false;
+                    for(let j = 0; j < 9; j++){
+                        if(template[j][emptyColumns[i]] === number){
+                            columnHaveNumber = true;
+                        }
+                    }
+                    if (columnHaveNumber == false){
+                        columnsWitouthNumber.push(emptyColumns[i]);
+                    }
+                }
+                console.log("columnsWitouthNumber", columnsWitouthNumber);
+                // En ese caso, añadirlo a esa casilla
+                if(columnsWitouthNumber.length === 1){
+                    template[rowNotIncluded - 1][columnsWitouthNumber[0]] = number;
+                    console.log("Añadido con thirdMethod - emptyColumns el numero: " + number + " en fila " + rowNotIncluded + " columna " + columnsWitouthNumber[0])
+                    renderTemplate();
+                }
+            }
 
-            // En ese caso, añadirlo a esa casilla
 
         }
     }
@@ -223,34 +243,31 @@ function extract(includesNumberArray) {
                 }
             } else if (includesNumberArray[i] <= 6) {
                 for(let j = 4; j <= 6; j++){
-                    if(!includesNumberArray.includes(i)){
+                    if(!includesNumberArray.includes(j)){
                         console.log("el array " + includesNumberArray + " no contiene: " + j )
                         return j;
                     }
                 }
             } else {
                 for(let j = 7; j <= 9; j++){
-                    if(!includesNumberArray.includes(i)){
+                    if(!includesNumberArray.includes(j)){
                         console.log("el array " + includesNumberArray + " no contiene: " + j )
                         return j;
                     }
                     /* Revisar este error:
-                    numberCount === 2 para  7
-el array 7,8 no contiene: 7
 1 [8] [ ] [1]  [4] [2] [ ]  [ ] [ ] [7] 
 2 [ ] [9] [7]  [5] [8] [ ]  [2] [ ] [ ] 
 3 [ ] [ ] [ ]  [1] [9] [7]  [6] [ ] [8] 
 
+Este 6 esta mal, ahi deberia ir un 1:
 4 [6] [ ] [ ]  [ ] [5] [ ]  [ ] [ ] [3] 
-5 [7] [8] [ ]  [3] [1] [4]  [ ] [6] [2] 
+   ^
+5 [7] [8] [ ]  [3] [1] [4]  [ ] [ ] [2] 
 6 [ ] [ ] [3]  [6] [7] [ ]  [1] [ ] [ ] 
 
 7 [9] [7] [6]  [2] [3] [1]  [ ] [ ] [ ] 
-8 [ ] [1] [ ]  [7] [ ] [ ]  [3] [2] [ ] 
-9 [ ] [3] [ ]  [ ] [ ] [ ]  [ ] [ ] [ ] 
-
-En la fila 7 bloque undefined hay 6,7,8 casillas libres
-thirdMethod */
+8 [ ] [1] [ ]  [ ] [ ] [ ]  [3] [2] [ ] 
+9 [ ] [3] [ ]  [ ] [ ] [ ]  [ ] [ ] [ ]  */
                 }
             }
         }
