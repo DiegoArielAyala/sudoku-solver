@@ -5,38 +5,35 @@ template = [[" "] * 9 for _ in range(9)]
 def fill_template(row, column, number):
     template[row - 1][column -1] = number
 
-fill_template(1, 1, 8)
-fill_template(1, 3, 1)
-fill_template(1, 9, 7)
-fill_template(2, 2, 9)
-fill_template(2, 3, 7)
-fill_template(2, 4, 5)
-fill_template(2, 5, 8)
-fill_template(3, 5, 9)
-fill_template(3, 6, 7)
-fill_template(3, 7, 6)
-fill_template(3, 9, 8)
-fill_template(4, 5, 5)
-fill_template(4, 9, 3)
-fill_template(5, 1, 7)
-fill_template(5, 2, 8)
-fill_template(5, 4, 3)
-fill_template(5, 6, 4)
-fill_template(5, 9, 2)
-fill_template(6, 3, 3)
-fill_template(6, 4, 6)
-fill_template(6, 5, 7)
-fill_template(6, 7, 1)
-fill_template(7, 1, 9)
-fill_template(7, 2, 7)
-fill_template(7, 3, 6)
-fill_template(7, 4, 2)
-fill_template(7, 5, 3)
-fill_template(7, 6, 1)
-fill_template(8, 2, 1)
-fill_template(8, 7, 3)
-fill_template(8, 8, 2)
-fill_template(9, 2, 3)
+def init_template():
+    fill_template(1, 1, 3)
+    fill_template(1, 5, 4)
+    fill_template(1, 6, 9)
+    fill_template(2, 4, 6)
+    fill_template(2, 7, 5)
+    fill_template(2, 9, 1)
+    fill_template(3, 1, 7)
+    fill_template(3, 2, 5)
+    fill_template(3, 3, 2)
+    fill_template(3, 6, 1)
+    fill_template(4, 3, 1)
+    fill_template(4, 7, 7)
+    fill_template(5, 1, 5)
+    fill_template(5, 4, 3)
+    fill_template(5, 5, 9)
+    fill_template(5, 6, 6)
+    fill_template(6, 3, 8)
+    fill_template(6, 4, 1)
+    fill_template(6, 5, 5)
+    fill_template(6, 8, 9)
+    fill_template(6, 9, 6)
+    fill_template(7, 3, 3)
+    fill_template(7, 5, 1)
+    fill_template(7, 8, 6)
+    fill_template(8, 3, 4)
+    fill_template(8, 7, 1)
+    fill_template(9, 5, 2)
+    fill_template(9, 6, 8)
 
 def render_template():
     for row in enumerate(template):
@@ -46,14 +43,10 @@ def render_template():
             print(f"[{column[1]}]", end="")
         print("")
 
-
-render_template()
-
-# Funcion que revise en cada celda, si solo hay un valor posible
-
 round = 1
 
-def check_posible_numbers_for_each_box(round):
+
+def resolve_sudoku(round, template):
     number_filled_in_round = False
     print(f"Round: {round}")
     for row in enumerate(template):
@@ -63,8 +56,8 @@ def check_posible_numbers_for_each_box(round):
 
             if type(template[row_index][column_index]) == int:
                 #print(f"Working with number {template[row_index][column_index]} in row {row_index} and column {column_index}")
-                three_rows_check(row_index, column_index)
-                three_column_check(row_index, column_index)
+                three_rows_check(row_index, column_index, number_filled_in_round)
+                three_column_check(row_index, column_index, number_filled_in_round)
                 continue
 
             posible_numbers = list(range(1, 10))
@@ -75,24 +68,25 @@ def check_posible_numbers_for_each_box(round):
             number_filled_in_round = check_unique_posible_number(posible_numbers, row_index, column_index, number_filled_in_round)
             posible_numbers = check_block_posible_numbers(posible_numbers, row_index, column_index)
             number_filled_in_round = check_unique_posible_number(posible_numbers, row_index, column_index, number_filled_in_round)
-            # print(f"Posible numbers: {posible_numbers} for row {row_index + 1} and column {column_index + 1}")
+            #print(f"Posible numbers: {posible_numbers} for row {row_index} and column {column_index}")
 
-            """Nuevas funciones: agarrar cada fila (hacer lo mismo para columna), revisar que numeros faltan. Por cada numero que falta, revisar si hay un solo casillero en el que pueda ir, revisando si ese numero esta en cada columna de las casillas vacias o en los bloques de las casillas vacias """
+            number_filled_in_round = unique_posible_position_in_column(column_index, number_filled_in_round)
             
-        unique_posible_position_in_row(row_index)
+        number_filled_in_round = unique_posible_position_in_row(row_index, number_filled_in_round)
+        number_filled_in_round = unique_posible_position_in_block(number_filled_in_round)
 
     print(f"is_sudoku_completed: {is_sudoku_completed()}")
     print(f"number_filled_in_round: {number_filled_in_round}")
     if not is_sudoku_completed() and number_filled_in_round:
         round = round + 1
-        check_posible_numbers_for_each_box(round)
+        resolve_sudoku(round, template)
     else:
-        return
+        resolve_with_backtracking(round, template)
 
-def unique_posible_position_in_row(row_index):
+def unique_posible_position_in_row(row_index, number_filled_in_round):
     posible_numbers_in_row = list(range(1, 10))
     posible_positions = []
-    print(f"template row {row_index}: {template[row_index]}")
+    #print(f"template row {row_index}: {template[row_index]}")
     for column in enumerate(template[row_index]):
         if type(column[1]) != int:
             posible_positions.append(column[0])
@@ -102,12 +96,12 @@ def unique_posible_position_in_row(row_index):
             except:
                 continue
     if posible_numbers_in_row == []:
-        return
-    print(f"Posible numbers in row {row_index}: {posible_numbers_in_row}")
-    print(f"Posible positions in row {row_index}: {posible_positions}")
+        return number_filled_in_round
+    #print(f"Posible numbers in row {row_index}: {posible_numbers_in_row}")
+    #print(f"Posible positions in row {row_index}: {posible_positions}")
     for posible_number in posible_numbers_in_row:
         posible_positions_copy = posible_positions.copy()
-        print(f"Checking posible number {posible_number} in row {row_index}. Posible positions: {posible_positions_copy}")
+        #print(f"Checking posible number {posible_number} in row {row_index}. Posible positions: {posible_positions_copy}")
         # Revisar cada columna de las posiciones posibles, si el numero esta en esa columna, eliminar esa posicion de las posiciones posibles
         # Revisar cada bloque de las posiciones posibles, si el numero esta en ese bloque, eliminar esa posicion de las posiciones posibles    
         for column in [1, 4, 7]:
@@ -116,21 +110,150 @@ def unique_posible_position_in_row(row_index):
                 for column in range(start_column_block, end_column_block):
                     try:
                         posible_positions_copy.remove(column)
-                        print(f"1 Removed column {column} from posible positions. Posible positions left: {posible_positions_copy}")
                     except:
                         continue
         for column in posible_positions_copy:
             if number_in_column(posible_number, column):
                 try:
                     posible_positions_copy.remove(column)
-                    print(f"2 Removed column {column} from posible positions. Posible positions left: {posible_positions_copy}")
                 except:
                     continue
-        """Revisar"""
-        if len(posible_positions_copy) == 1 and review_number_before_fill() and type(template[row_index][posible_positions_copy[0]]) != int:
+        #print(f"Posible positions left: {posible_positions_copy}")
+        if len(posible_positions_copy) == 1 and review_number_before_fill(posible_number, row_index, posible_positions_copy[0]) and type(template[row_index][posible_positions_copy[0]]) != int:
             template[row_index][posible_positions_copy[0]] = posible_number
+            number_filled_in_round = True
             render_template()
             print(f"Template in row {row_index} and column {posible_positions_copy[0]} = {posible_number} with unique posible position in row method")
+    return number_filled_in_round
+
+def unique_posible_position_in_column(column_index, number_filled_in_round):
+    posible_numbers_in_column = list(range(1, 10))
+    posible_positions = []
+    #print(f"template column {column_index}: { [template[row][column_index] for row in range(9)] }")
+    for row in range(9):
+        if type(template[row][column_index]) != int:
+            posible_positions.append(row)
+        if type(template[row][column_index]) == int:
+            try:
+                posible_numbers_in_column.remove(template[row][column_index])
+            except:
+                continue
+    if posible_numbers_in_column == []:
+        return number_filled_in_round
+    #print(f"Posible numbers in column {column_index}: {posible_numbers_in_column}")
+    #print(f"Posible positions in column {column_index}: {posible_positions}")
+    for posible_number in posible_numbers_in_column:
+        posible_positions_copy = posible_positions.copy()
+        #print(f"Checking posible number {posible_number} in column {column_index}. Posible positions: {posible_positions_copy}")
+        # Revisar cada columna de las posiciones posibles, si el numero esta en esa columna, eliminar esa posicion de las posiciones posibles
+        # Revisar cada bloque de las posiciones posibles, si el numero esta en ese bloque, eliminar esa posicion de las posiciones posibles    
+        for row in [1, 4, 7]:
+            start_row_block, end_row_block, start_column_block, end_column_block = define_block(row, column_index)
+            if number_in_block(posible_number, start_row_block, end_row_block, start_column_block, end_column_block):
+                for row in range(start_row_block, end_row_block):
+                    try:
+                        posible_positions_copy.remove(row)
+                    except:
+                        continue
+        for row in posible_positions_copy:
+            if posible_number in template[row]:
+                try:
+                    posible_positions_copy.remove(row)
+                except:
+                    continue
+        #print(f"Posible positions left: {posible_positions_copy}")
+        if len(posible_positions_copy) == 1 and review_number_before_fill(posible_number, posible_positions_copy[0], column_index) and type(template[posible_positions_copy[0]][column_index]) != int:
+            template[posible_positions_copy[0]][column_index] = posible_number
+            number_filled_in_round = True
+            render_template()
+            print(f"Template in column {column_index} and row {posible_positions_copy[0]} = {posible_number} with unique posible position in column method")
+    return number_filled_in_round
+
+def unique_posible_position_in_block(number_filled_in_round):
+    posible_numbers_in_block = list(range(1, 10))
+    for row in [1, 4, 7]:
+        for column in [1, 4, 7]:
+            posible_positions = []
+            copy_posible_numbers_in_block = posible_numbers_in_block.copy()
+            start_row_block, end_row_block, start_column_block, end_column_block = define_block(row, column)
+            if row >= start_row_block and row < end_row_block and column >= start_column_block and column < end_column_block:
+                for row_in_block in range(start_row_block, end_row_block):
+                    for column_in_block in range(start_column_block, end_column_block):
+                        if type(template[row_in_block][column_in_block]) != int:
+                            posible_positions.append([row_in_block, column_in_block])
+                        if type(template[row_in_block][column_in_block]) == int:
+                            try:
+                                copy_posible_numbers_in_block.remove(template[row_in_block][column_in_block])
+                            except:
+                                continue
+            #print(f"Posible numbers in block of row {row} and column {column}: {copy_posible_numbers_in_block} and posible positions {posible_positions}")
+            
+            for posible_number in copy_posible_numbers_in_block:
+                copy_posible_positions = posible_positions.copy()
+                #print(f"{copy_posible_positions} Inicial copy_posible_positions for number {posible_number}")
+                #print(f" start row block { start_row_block} end row block { end_row_block}")
+                for row_in_block in range(start_row_block, end_row_block):
+                    #print(f"Searching {posible_number} in row {row_in_block} {template[row_in_block]}")
+                    copy_copy_posible_positions = copy_posible_positions.copy()
+                    if posible_number in template[row_in_block]:
+                        #print(f"Copy copy posible positions {copy_copy_posible_positions} for number {posible_number} in row {row_in_block}")
+                        for position in copy_posible_positions:
+                            if position[0] == row_in_block:
+                                try:
+                                    copy_copy_posible_positions.remove(position)
+                                    #print(f"Removed a posible position with row. Copy copy posible positions {copy_copy_posible_positions} for number {posible_number}")
+                                except:
+                                    continue
+                #render_template()
+                for column_in_block in range(start_column_block, end_column_block):
+                    for posible_row in range(9):
+                        #print(f"Searching {posible_number} in column {column_in_block} and row {posible_row} {template[posible_row][column_in_block]}")
+                        if posible_number == template[posible_row][column_in_block]:
+                            for position in copy_posible_positions:
+                                if position[1] == column_in_block:
+                                    #print(f"position {position} == column_in_block {column_in_block}")
+                                    try:
+                                        copy_copy_posible_positions.remove(position)
+                                    except:
+                                        continue
+                                    #print(f"Removed a posible position {position} with column. Copy copy posible positions {copy_copy_posible_positions} for number {posible_number}")
+                #print(f"{copy_copy_posible_positions} Final copy_posible_positions for number {posible_number} in row {row_in_block} and column {column_in_block}")
+                if len(copy_copy_posible_positions) == 1 and review_number_before_fill(posible_number, copy_copy_posible_positions[0][0], copy_copy_posible_positions[0][1]) and template[copy_copy_posible_positions[0][0]][copy_copy_posible_positions[0][1]] != int:
+                    template[copy_copy_posible_positions[0][0]][copy_copy_posible_positions[0][1]] = posible_number
+                    number_filled_in_round = True
+                    render_template()
+                    #print(f"Unique posible position for {posible_number} in {copy_copy_posible_positions}")
+                else:
+                    # print(f"{copy_copy_posible_positions} Checking number {posible_number}  in row {row} column {column} in positions: ")
+                    try:
+                        if check_unique_row_in_block(copy_copy_posible_positions):
+                            #print(f"Unique row in block for number {posible_number} in positions {copy_copy_posible_positions}")
+                            pass
+                        if check_unique_column_in_block(copy_copy_posible_positions):
+                            #print(f"Unique column in block for number {posible_number} in positions {copy_copy_posible_positions}")
+                            pass
+                    except:
+                        continue
+                    
+    return number_filled_in_round
+
+def check_unique_row_in_block(copy_copy_posible_positions):
+    row = copy_copy_posible_positions[0][0]
+    for position in copy_copy_posible_positions:
+        if position[0] == row:
+            continue
+        else:
+            return False
+    return True
+
+def check_unique_column_in_block(copy_copy_posible_positions):
+    column = copy_copy_posible_positions[0][1]
+    for position in copy_copy_posible_positions:
+        if position[1] == column:
+            continue
+        else:
+            return False
+    return True    
 
 def check_rows_posible_numbers(posible_numbers, row_index):
     for box in template[row_index]:
@@ -192,7 +315,7 @@ def define_block(row_index, column_index):
         end_column_block = 9
     return start_row_block, end_row_block, start_column_block, end_column_block
 
-def three_rows_check(row_index, column_index):
+def three_rows_check(row_index, column_index, number_filled_in_round):
     # Agarrar cada celda
     # Revisar si en una de las filas de su bloque esta ese numero
     # Revisar en la otra fila de ese bloque si esta ese numero
@@ -211,7 +334,7 @@ def three_rows_check(row_index, column_index):
 
         # Tomar esa fila, crear un rango del 0 al 8 con las columnas, eliminar cada numero si en esa casilla hay un numero o si en la columa existe el numero
         columns = get_posibles_columns(row, number, positions_of_number)
-        fill_number_if_one_column_left(row, columns, number)
+        fill_number_if_one_column_left(row, columns, number, number_filled_in_round)
 
         # Hay que buscar en que bloque esta el otro numero, no "number", sino el otro
         try:
@@ -232,7 +355,7 @@ def three_rows_check(row_index, column_index):
             return
         # print(f"Posible columns for number {number} in row {row + 1}: {columns}")
 
-        fill_number_if_one_column_left(row, columns, number)
+        fill_number_if_one_column_left(row, columns, number, number_filled_in_round)
 
 def get_posibles_columns(row, number, positions_of_number):
     columns = list(range(0, 9))
@@ -284,11 +407,13 @@ def row_without_number(start_row_block, end_row_block, number):
             #print(f"Number {number} not in row {row}")
             return row
 
-def fill_number_if_one_column_left(row, columns, number):
-    if len(columns) == 1 and review_number_before_fill() and type(template[row][columns[0]]) != int:
+def fill_number_if_one_column_left(row, columns, number, number_filled_in_round):
+    if len(columns) == 1 and review_number_before_fill(number, row, columns[0]) and type(template[row][columns[0]]) != int:
         template[row][columns[0]] = number
+        number_filled_in_round = True
         render_template()
         print(f"Template in row {row} and column {columns[0]} = {number} with three rows check method")
+    return number_filled_in_round
 
 def get_row_of_second_number(start_row_block, end_row_block, row_index, number):
     rows = list(range(start_row_block, end_row_block))
@@ -312,7 +437,7 @@ def number_is_in_row(number, row_index):
     return number in template[row_index]
      
 
-def three_column_check(row_index, column_index):
+def three_column_check(row_index, column_index, number_filled_in_round):
     # Agarrar cada celda
     # Revisar si en una de las filas de su bloque esta ese numero
     # Revisar en la otra fila de ese bloque si esta ese numero
@@ -330,7 +455,7 @@ def three_column_check(row_index, column_index):
         column = column_without_number(start_column_block, end_column_block, number)
         # Tomar esa columna, crear un rango del 0 al 8 con las filas, eliminar cada numero si en esa casilla hay un numero o si en la columa existe el numero
         rows = get_posibles_rows(column, number, positions_of_number)
-        fill_number_if_one_row_left(column, rows, number)
+        fill_number_if_one_row_left(column, rows, number, number_filled_in_round)
         
         # Hay que buscar en que bloque esta el otro numero, no "number", sino el otro
         try:
@@ -346,20 +471,21 @@ def three_column_check(row_index, column_index):
                     #print(f"4 Removed column {row}. Columns left: {rows}")
                 except:
                     continue
-            fill_number_if_one_row_left(column, rows, number)
+            fill_number_if_one_row_left(column, rows, number, number_filled_in_round)
         except:
             return
         # print(f"Posible columns for number {number} in row {row + 1}: {columns}")
 
-        fill_number_if_one_row_left(column, rows, number)
+        fill_number_if_one_row_left(column, rows, number, number_filled_in_round)
 
 
-def fill_number_if_one_row_left(column, rows, number):
-    if len(rows) == 1 and review_number_before_fill() and type(template[rows[0]][column]) != int:
+def fill_number_if_one_row_left(column, rows, number, number_filled_in_round):
+    if len(rows) == 1 and review_number_before_fill(number, rows[0], column) and type(template[rows[0]][column]) != int:
         template[rows[0]][column] = number
+        number_filled_in_round = True
         render_template()
         #print(f"Template in row {rows[0]} and column {column} = {number} with three rows check method")
-
+    return number_filled_in_round
 
 def get_column_of_second_number(start_column_block, end_column_block, column_index, number):
     columns = list(range(start_column_block, end_column_block))
@@ -440,7 +566,6 @@ def number_in_row(number, row):
     if number in template[row]:
         return True
 
-
 def number_in_block(number, start_row_block, end_row_block, start_column_block, end_column_block):
     for row in range(start_row_block, end_row_block):
         for column in range(start_column_block, end_column_block):
@@ -448,12 +573,9 @@ def number_in_block(number, start_row_block, end_row_block, start_column_block, 
                 #print(f"Number {number} is in block of rows {start_row_block} - {end_row_block} and columns {start_column_block} - {end_column_block}")
                 return True
 
-
-
-
 def check_unique_posible_number(posible_numbers, row_index, column_index, number_filled_in_round):
     #print(f"Check unique posible number for row {row_index} column {column_index}")
-    if len(posible_numbers) == 1 and type(posible_numbers[0]) == int and review_number_before_fill():
+    if len(posible_numbers) == 1 and type(posible_numbers[0]) == int and review_number_before_fill(posible_numbers[0], row_index, column_index):
         template[row_index][column_index] = posible_numbers[0]
         render_template()
         print(f"Template in row {row_index + 1} and column {column_index + 1} = {posible_numbers[0]} with unique posible number method")
@@ -461,9 +583,35 @@ def check_unique_posible_number(posible_numbers, row_index, column_index, number
         return number_filled_in_round
     return number_filled_in_round
 
-def review_number_before_fill():
-    # Se le pasa el numero a colocar y se vuelve a revisar que ese numero no se repita en fila, columna o bloque
-    # Retorna true o false
+def resolve_with_backtracking(round, template):
+    print(f"Backtracking:")
+    copy_template = template.copy()
+    for row in enumerate(copy_template):
+        row_index = row[0]
+        for column in enumerate(row[1]):
+            column_index = column[0]
+            if type(copy_template[row_index][column_index]) == int:
+                continue
+
+            posible_numbers = list(range(1, 10))
+            posible_numbers = check_rows_posible_numbers(posible_numbers, row_index)
+            posible_numbers = check_columns_posible_numbers(posible_numbers, column_index)
+            posible_numbers = check_block_posible_numbers(posible_numbers, row_index, column_index)
+            #print(f"Posible numbers: {posible_numbers} for row {row_index} and column {column_index}")
+            if len(posible_numbers) == 2:
+                copy_template[row_index][column_index] = posible_numbers[0]
+                if resolve_sudoku(round, copy_template) == False:
+                    print(f"Error in backtracking")
+            else:
+                continue
+
+
+def review_number_before_fill(posible_number, row_index, column_index):
+    start_row_block, end_row_block, start_column_block, end_column_block = define_block(row_index, column_index)
+    if number_in_row(posible_number, row_index) or number_in_column(posible_number, column_index) or number_in_block(posible_number, start_row_block, end_row_block, start_column_block, end_column_block):
+        print(f"review_number_before_fill False")
+        return False
+    print(f"review_number_before_fill True")
     return True
 
 def is_sudoku_completed():
@@ -474,4 +622,6 @@ def is_sudoku_completed():
     print("Sudoku is completed")
     return True
 
-check_posible_numbers_for_each_box(round)
+init_template()
+render_template()
+resolve_sudoku(round, template)
